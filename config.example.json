@@ -12,5 +12,9 @@
   "refresh_margin_seconds": 120,
   "request_timeout_seconds": 30,
   "http_max_attempts": 3,
-  "max_pages_per_poll": 100
+  "max_pages_per_poll": 100,
+  "telegram_bot_token": "",
+  "telegram_chat_id": "",
+  "telegram_enabled": true,
+  "reminder_interval_minutes": 5
 }
