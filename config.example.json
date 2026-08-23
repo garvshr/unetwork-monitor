@@ -1,0 +1,16 @@
+{
+  "api_base_url": "https://api.unityedge.io",
+  "supabase_publishable_key": "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY",
+  "refresh_token": "PASTE_YOUR_INITIAL_REFRESH_TOKEN",
+  "access_token": null,
+  "token_expires_at": null,
+  "token_updated_at": null,
+  "role": "ulo",
+  "page_size": 20,
+  "enabled": true,
+  "poll_interval_seconds": 60,
+  "refresh_margin_seconds": 120,
+  "request_timeout_seconds": 30,
+  "http_max_attempts": 3,
+  "max_pages_per_poll": 100
+}

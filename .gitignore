@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Secrets and runtime state - never commit
+config.json
+state.json
+*.tmp
+
+json.json
