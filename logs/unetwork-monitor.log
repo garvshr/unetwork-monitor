@@ -1,0 +1,10 @@
+2026-08-23 19:50:35 INFO    monitor | Credentials verified; monitoring started (state file: C:\Users\garvs\OneDrive\Documents\unetwork-monitor\state.json).
+2026-08-23 19:50:35 INFO    telegram | Telegram notifications enabled.
+2026-08-23 19:50:35 INFO    telegram | Telegram callback listener started.
+2026-08-23 19:50:37 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 19:50:37 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 19:51:07 INFO    monitor | Credentials verified; monitoring started (state file: C:\Users\garvs\OneDrive\Documents\unetwork-monitor\state.json).
+2026-08-23 19:51:07 INFO    telegram | Telegram notifications enabled.
+2026-08-23 19:51:07 INFO    telegram | Telegram callback listener started.
+2026-08-23 19:51:09 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 19:51:09 INFO    monitor | Fetched 11 license(s); 11 online.

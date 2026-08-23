@@ -8,6 +8,7 @@ between online and offline (with per-license ignore controls).
 import argparse
 import json
 import logging
+import logging.handlers
 import os
 import signal
 import sys
@@ -28,7 +29,7 @@ STATE_PATH = Path(os.environ.get("UNETWORK_STATE_FILE", BASE_DIR / "state.json")
 
 logger = logging.getLogger("monitor")
 
-RECOVERY_CLOSED_TEXT = "🟢 Device Back Online\n\nDevice:\n{device_name}\n\nOffline alert closed automatically."
+RECOVERY_CLOSED_TEXT = "🟢 Device Back Online\n\nDevice:\n{device_name}\n\nLicense:\n{license_short}\n\nOffline alert closed automatically."
 
 
 class StopRun(Exception):
@@ -41,11 +42,39 @@ def _raise_stop(signum, frame):
 
 def setup_logging():
     level = getattr(logging, os.environ.get("UNETWORK_LOG_LEVEL", "INFO").upper(), logging.INFO)
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s %(levelname)-7s %(name)s | %(message)s",
+    
+    # Create logs directory
+    log_dir = BASE_DIR / "logs"
+    log_dir.mkdir(exist_ok=True)
+    log_file = log_dir / "unetwork-monitor.log"
+    
+    # Formatter matching existing terminal format
+    formatter = logging.Formatter(
+        fmt="%(asctime)s %(levelname)-7s %(name)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+    
+    # Console handler (existing behavior)
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(formatter)
+    console_handler.setLevel(level)
+    
+    # File handler with rotation (5 MB, keep 5 backups)
+    file_handler = logging.handlers.RotatingFileHandler(
+        log_file,
+        maxBytes=5 * 1024 * 1024,  # 5 MB
+        backupCount=5,
+        encoding="utf-8",
+    )
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(level)
+    
+    # Configure root logger with both handlers
+    root_logger = logging.getLogger()
+    root_logger.setLevel(level)
+    root_logger.handlers = []  # Clear any existing handlers
+    root_logger.addHandler(console_handler)
+    root_logger.addHandler(file_handler)
 
 
 def load_config():
@@ -261,12 +290,19 @@ def make_action_handler(holder, state_lock, notifier):
                 return "This license is no longer tracked.", []
 
             device_name = entry.get("device_name") or "Unknown Device"
-            alert_state = entry.get("notification_state") or "active"
-            if alert_state == "unhandled":
+            alert_state = entry.get("notification_state")
+            # Migrate legacy 'ignored' field
+            if alert_state is None:
+                if entry.get("ignored"):
+                    alert_state = "ignored"
+                else:
+                    alert_state = "active"
+            elif alert_state == "unhandled":
                 alert_state = "active"
 
-            # Handle recovery - if device is online, alert is closed
-            if entry.get("status") == "online" or alert_state == "recovered":
+            # Handle recovery - if device is online and alert was recovered, alert is closed
+            # But allow "monitor" action to resume monitoring
+            if entry.get("status") == "online" and alert_state == "recovered" and action not in ("monitor", "start"):
                 return f"Alert already closed: {device_name} is online.", []
 
             followup_jobs = []
@@ -299,22 +335,67 @@ def make_action_handler(holder, state_lock, notifier):
                 if alert_state != "ignored":
                     return "Please ignore the alert first before starting monitoring.", []
 
-                entry["notification_state"] = "monitoring"
-                save_state(holder)
-                logger.info(
-                    "Monitoring started for license %s (%s) via Telegram.",
-                    short_id(license_id),
-                    device_name,
-                )
-                if message_id and notifier:
-                    def edit_monitoring_started():
-                        notifier.edit_message(
-                            build_message("🔵 Monitoring Started", entry, "Monitoring has started."),
-                            message_id,
-                            buttons=None,  # Remove all buttons
+                # Check current device status
+                current_status = entry.get("status", "unknown")
+                
+                # If device is still offline, send a new offline notification immediately
+                if current_status == "offline":
+                    entry["notification_state"] = "active"
+                    # Keep the original offline_since timestamp
+                    # Resume reminders from the original offline time
+                    if not entry.get("offline_since"):
+                        entry["offline_since"] = datetime.now(timezone.utc).isoformat()
+                    entry["last_reminder_sent"] = entry["offline_since"]
+                    save_state(holder)
+                    logger.info(
+                        "Monitoring resumed for license %s (%s) via Telegram; device still offline, sending alert.",
+                        short_id(license_id),
+                        device_name,
+                    )
+                    if message_id and notifier:
+                        def edit_monitoring_started():
+                            notifier.edit_message(
+                                build_message("🔵 Monitoring Started", entry, "Monitoring has started."),
+                                message_id,
+                                buttons=None,
+                            )
+                        followup_jobs.append(edit_monitoring_started)
+                    # Send new offline notification
+                    outgoing_jobs = []
+                    def send_offline_alert():
+                        action_id = get_or_create_action_id(holder, license_id)
+                        msg_id = notifier.notify(
+                            build_message("🔴 Device Offline", entry, f"License:\n{short_id(license_id)}"),
+                            buttons=ignore_keyboard(action_id),
                         )
-                    followup_jobs.append(edit_monitoring_started)
-                return "Monitoring started.", followup_jobs
+                        if msg_id:
+                            with state_lock:
+                                e = holder["licenses"].get(license_id)
+                                if e is not None:
+                                    e["telegram_message_id"] = msg_id
+                                    save_state(holder)
+                    outgoing_jobs.append(send_offline_alert)
+                    return "Monitoring resumed. Device still offline — alert sent.", followup_jobs + outgoing_jobs
+                else:
+                    # Device is online, just resume monitoring
+                    entry["notification_state"] = "active"
+                    save_state(holder)
+                    logger.info(
+                        "Monitoring started for license %s (%s) via Telegram; device is online.",
+                        short_id(license_id),
+                        device_name,
+                    )
+                    if message_id and notifier:
+                        def edit_monitoring_started():
+                            notifier.edit_message(
+                                build_message("🔵 Monitoring Started", entry, "Monitoring has started."),
+                                message_id,
+                                buttons=None,
+                            )
+                        followup_jobs.append(edit_monitoring_started)
+                    return "Monitoring started. Device is online.", followup_jobs
+
+            return "Unknown action.", []
 
             return "Unknown action.", []
 
@@ -406,7 +487,8 @@ def run_loop(client, config, once=False, notifier=None):
                                 if source.get("device_name"):
                                     stale_device_name = source["device_name"]
                         minutes = _minutes_between(_parse_ts(since_raw), now_dt)
-                        footer = f"Offline duration:\n{minutes} minutes" if minutes is not None else None
+                        license_short = short_id(license_id)
+                        footer = f"License:\n{license_short}\n\nOffline duration:\n{minutes} minutes" if minutes is not None else f"License:\n{license_short}"
                         if notifier:
                             outgoing.append({
                                 "kind": "send",
@@ -419,7 +501,7 @@ def run_loop(client, config, once=False, notifier=None):
                                 outgoing.append({
                                     "kind": "edit",
                                     "message_id": stale_message_id,
-                                    "text": RECOVERY_CLOSED_TEXT.format(device_name=stale_device_name or info["device_name"]),
+                                    "text": RECOVERY_CLOSED_TEXT.format(device_name=stale_device_name or info["device_name"], license_short=license_short),
                                 })
                         info["notification_state"] = "recovered"
                         if minutes is not None:
