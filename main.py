@@ -89,21 +89,22 @@ def load_config():
 
 def load_state():
     if not STATE_PATH.is_file():
-        return {"licenses": {}, "telegram_actions": {}}
+        return {"licenses": {}, "telegram_actions": {}, "auth_failure_notified": False}
     try:
         with STATE_PATH.open(encoding="utf-8") as handle:
             state = json.load(handle)
     except (json.JSONDecodeError, OSError) as exc:
         logger.warning("Could not read %s (%s); starting with empty state.", STATE_PATH, exc)
-        return {"licenses": {}, "telegram_actions": {}}
+        return {"licenses": {}, "telegram_actions": {}, "auth_failure_notified": False}
     if isinstance(state, dict) and isinstance(state.get("licenses"), dict):
         state.setdefault("telegram_actions", {})
+        state.setdefault("auth_failure_notified", False)
         return state
     if isinstance(state, dict) and isinstance(state.get("devices"), dict):
         logger.info("Legacy device-keyed state detected; starting a fresh license baseline.")
     else:
         logger.warning("Unrecognised state file structure; starting with empty state.")
-    return {"licenses": {}, "telegram_actions": {}}
+    return {"licenses": {}, "telegram_actions": {}, "auth_failure_notified": False}
 
 
 def save_state(state):
@@ -111,6 +112,7 @@ def save_state(state):
         "last_updated": datetime.now(timezone.utc).isoformat(),
         "licenses": state.get("licenses", {}),
         "telegram_actions": state.get("telegram_actions", {}),
+        "auth_failure_notified": state.get("auth_failure_notified", False),
     }
     tmp_path = STATE_PATH.with_suffix(".json.tmp")
     tmp_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
@@ -564,11 +566,30 @@ def run_loop(client, config, once=False, notifier=None):
                                 save_state(holder)
         except AuthenticationError as exc:
             logger.error("Authentication requires manual attention: %s", exc)
+            if notifier and not holder.get("auth_failure_notified", False):
+                try:
+                    auth_msg = (
+                        "🔴 U Network Authentication Failed\n\n"
+                        "The refresh token has expired or was rejected.\n\n"
+                        "The monitor cannot refresh its access token and requires manual attention.\n\n"
+                        "Please manually update/fix the refresh token and restart the monitor."
+                    )
+                    notifier.notify(auth_msg)
+                    holder["auth_failure_notified"] = True
+                    save_state(holder)
+                    logger.info("Authentication failure notification sent via Telegram.")
+                except Exception:
+                    logger.exception("Failed to send authentication failure notification.")
             return 1
         except (ApiError, ConnectionError, requests.RequestException) as exc:
             logger.error("Poll cycle failed (will retry next cycle): %s", exc)
         except Exception:
             logger.exception("Unexpected error during poll cycle (will retry).")
+        else:
+            # Reset auth failure notification flag on successful poll cycle
+            if holder.get("auth_failure_notified", False):
+                holder["auth_failure_notified"] = False
+                save_state(holder)
 
         if once:
             break
@@ -603,6 +624,12 @@ def main(argv=None):
     except AuthenticationError as exc:
         logger.error("Startup authentication failed: %s", exc)
         return 2
+
+    # Reset auth failure notification flag on successful authentication
+    state = load_state()
+    if state.get("auth_failure_notified", False):
+        state["auth_failure_notified"] = False
+        save_state(state)
 
     try:
         return run_loop(client, config, once=args.once, notifier=TelegramNotifier(config))

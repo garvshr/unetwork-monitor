@@ -8,3 +8,121 @@
 2026-08-23 19:51:07 INFO    telegram | Telegram callback listener started.
 2026-08-23 19:51:09 INFO    monitor | Ignored 1 license(s) without a bound device name.
 2026-08-23 19:51:09 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 19:59:50 INFO    monitor | Credentials verified; monitoring started (state file: C:\Users\garvs\OneDrive\Documents\unetwork-monitor\state.json).
+2026-08-23 19:59:50 INFO    telegram | Telegram notifications enabled.
+2026-08-23 19:59:50 INFO    telegram | Telegram callback listener started.
+2026-08-23 19:59:51 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 19:59:51 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:02:12 INFO    monitor | Credentials verified; monitoring started (state file: C:\Users\garvs\OneDrive\Documents\unetwork-monitor\state.json).
+2026-08-23 20:02:12 INFO    telegram | Telegram notifications enabled.
+2026-08-23 20:02:12 INFO    telegram | Telegram callback listener started.
+2026-08-23 20:02:14 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:02:14 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:02:24 ERROR   telegram | Telegram getUpdates failed (HTTP 409): {"ok":false,"error_code":409,"description":"Conflict: terminated by other getUpdates request; make sure that only one bot instance is running"}
+2026-08-23 20:02:44 ERROR   telegram | Telegram getUpdates failed (HTTP 409): {"ok":false,"error_code":409,"description":"Conflict: terminated by other getUpdates request; make sure that only one bot instance is running"}
+2026-08-23 20:02:55 INFO    monitor | Shutdown requested; exiting.
+2026-08-23 20:02:59 INFO    monitor | Credentials verified; monitoring started (state file: C:\Users\garvs\OneDrive\Documents\unetwork-monitor\state.json).
+2026-08-23 20:02:59 INFO    telegram | Telegram notifications enabled.
+2026-08-23 20:02:59 INFO    telegram | Telegram callback listener started.
+2026-08-23 20:03:01 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:03:01 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:03:05 ERROR   telegram | Telegram getUpdates failed (HTTP 409): {"ok":false,"error_code":409,"description":"Conflict: terminated by other getUpdates request; make sure that only one bot instance is running"}
+2026-08-23 20:03:27 INFO    monitor | Shutdown requested; exiting.
+2026-08-23 20:03:28 INFO    monitor | Credentials verified; monitoring started (state file: C:\Users\garvs\OneDrive\Documents\unetwork-monitor\state.json).
+2026-08-23 20:03:28 INFO    telegram | Telegram notifications enabled.
+2026-08-23 20:03:28 INFO    telegram | Telegram callback listener started.
+2026-08-23 20:03:29 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:03:29 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:04:29 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:04:29 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:05:29 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:05:29 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:06:29 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:06:29 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-23 20:06:52 INFO    telegram | Telegram notification sent (message_id=42).
+2026-08-23 20:07:03 INFO    telegram | Telegram button pressed: ignore for license 2
+2026-08-23 20:07:03 INFO    monitor | License 0x8d...d149 (Redmi Note 12 Pro 5G) ignored via Telegram; reminders stopped.
+2026-08-23 20:07:04 INFO    telegram | Telegram message 42 edited.
+2026-08-23 20:07:29 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:07:29 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:07:29 INFO    monitor | License 0x8d...d149 back online after 1 minute(s) offline.
+2026-08-23 20:07:29 INFO    telegram | Telegram notification sent (message_id=43).
+2026-08-23 20:07:30 INFO    telegram | Telegram message 42 edited.
+2026-08-23 20:08:29 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:08:29 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:09:29 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:09:29 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:09:49 INFO    monitor | Shutdown requested; exiting.
+2026-08-23 20:23:54 INFO    monitor | Credentials verified; monitoring started (state file: C:\Users\garvs\OneDrive\Documents\unetwork-monitor\state.json).
+2026-08-23 20:23:54 INFO    telegram | Telegram notifications enabled.
+2026-08-23 20:23:54 INFO    telegram | Telegram callback listener started.
+2026-08-23 20:23:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:23:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:24:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:24:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:25:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:25:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:26:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:26:54 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:27:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:27:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:28:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:28:54 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:29:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:29:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:30:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:30:55 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-23 20:30:56 INFO    telegram | Telegram notification sent (message_id=44).
+2026-08-23 20:31:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:31:54 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-23 20:32:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:32:54 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-23 20:33:54 INFO    auth | Access token refreshed (valid 3600s); refresh token rotated.
+2026-08-23 20:33:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:33:55 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-23 20:34:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:34:54 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:34:54 INFO    monitor | License 0x35...d8de back online after 3 minute(s) offline.
+2026-08-23 20:34:55 INFO    telegram | Telegram notification sent (message_id=45).
+2026-08-23 20:34:55 INFO    telegram | Telegram message 44 edited.
+2026-08-23 20:35:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:35:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:36:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:36:54 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:37:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:37:54 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:38:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:38:54 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:39:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:39:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:40:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:40:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:41:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:41:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:42:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:42:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:43:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:43:54 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:44:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:44:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:45:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:45:54 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:46:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:46:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:47:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:47:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:48:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:48:54 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:49:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:49:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:50:55 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:50:55 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:51:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:51:54 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:52:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:52:54 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:53:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:53:54 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:54:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-23 20:54:54 INFO    monitor | Fetched 11 license(s); 11 online.
+2026-08-23 20:54:56 INFO    monitor | Shutdown requested; exiting.
