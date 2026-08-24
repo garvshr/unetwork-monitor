@@ -350,14 +350,14 @@ def make_action_handler(holder, state_lock, notifier):
                     entry["last_reminder_sent"] = entry["offline_since"]
                     save_state(holder)
                     logger.info(
-                        "Monitoring resumed for license %s (%s) via Telegram; device still offline, sending alert.",
+                        "Monitoring started for license %s (%s) via Telegram; device still offline, sending alert.",
                         short_id(license_id),
                         device_name,
                     )
                     if message_id and notifier:
                         def edit_monitoring_started():
                             notifier.edit_message(
-                                build_message("🔵 Monitoring Started", entry, "Monitoring has started."),
+                                build_message("🔵 Monitoring Started", entry, f"License:\n{short_id(license_id)}\n\nMonitoring has started."),
                                 message_id,
                                 buttons=None,
                             )
@@ -376,12 +376,13 @@ def make_action_handler(holder, state_lock, notifier):
                                 if e is not None:
                                     e["telegram_message_id"] = msg_id
                                     save_state(holder)
-                    outgoing_jobs.append(send_offline_alert)
+                        outgoing_jobs.append(send_offline_alert)
                     return "Monitoring resumed. Device still offline — alert sent.", followup_jobs + outgoing_jobs
                 else:
                     # Device is online, just resume monitoring
                     entry["notification_state"] = "active"
                     save_state(holder)
+
                     logger.info(
                         "Monitoring started for license %s (%s) via Telegram; device is online.",
                         short_id(license_id),
@@ -390,7 +391,7 @@ def make_action_handler(holder, state_lock, notifier):
                     if message_id and notifier:
                         def edit_monitoring_started():
                             notifier.edit_message(
-                                build_message("🔵 Monitoring Started", entry, "Monitoring has started."),
+                                build_message("🔵 Monitoring Started", entry, f"License:\n{short_id(license_id)}\n\nMonitoring has started."),
                                 message_id,
                                 buttons=None,
                             )
@@ -534,11 +535,13 @@ def run_loop(client, config, once=False, notifier=None):
                         info["last_reminder_sent"] = scheduled.isoformat()
                         minutes = boundaries_passed * (reminder_seconds // 60)
                         if notifier:
+                            license_short = short_id(license_id)
+                            footer = f"License:\n{license_short}\n\nOffline for:\n{minutes} minutes"
                             outgoing.append({
                                 "kind": "send",
                                 "license_id": license_id,
                                 "text": build_message(
-                                    "⚠️ Device Offline Reminder", info, f"Offline for:\n{minutes} minutes"
+                                    "⚠️ Device Offline Reminder", info, footer
                                 ),
                                 "buttons": ignore_keyboard(get_or_create_action_id(holder, license_id)),
                                 "track": True,

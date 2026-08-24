@@ -126,3 +126,64 @@
 2026-08-23 20:54:54 INFO    monitor | Ignored 1 license(s) without a bound device name.
 2026-08-23 20:54:54 INFO    monitor | Fetched 11 license(s); 11 online.
 2026-08-23 20:54:56 INFO    monitor | Shutdown requested; exiting.
+2026-08-24 10:21:57 ERROR   monitor | Startup authentication failed: Refresh token rejected (HTTP 400). Log in manually again and update the stored refresh token.
+2026-08-24 10:23:12 INFO    auth | Access token refreshed (valid 3600s); refresh token rotated.
+2026-08-24 10:23:12 INFO    monitor | Credentials verified; monitoring started (state file: C:\Users\garvs\OneDrive\Documents\unetwork-monitor\state.json).
+2026-08-24 10:23:12 INFO    telegram | Telegram notifications enabled.
+2026-08-24 10:23:12 INFO    telegram | Telegram callback listener started.
+2026-08-24 10:23:14 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-24 10:23:14 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-24 10:23:35 INFO    telegram | Telegram notification sent (message_id=114).
+2026-08-24 10:24:13 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-24 10:24:13 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-24 10:25:13 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-24 10:25:13 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-24 10:26:13 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-24 10:26:13 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-24 10:27:16 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-24 10:27:16 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-24 10:28:13 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-24 10:28:13 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-24 10:29:13 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-24 10:29:13 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-24 10:29:13 INFO    monitor | Offline reminder sent for license 0x35...d8de (5 minute(s) offline).
+2026-08-24 10:29:15 INFO    telegram | Telegram notification sent (message_id=115).
+2026-08-24 10:29:24 INFO    telegram | Telegram button pressed: ignore for license 4
+2026-08-24 10:29:24 INFO    monitor | License 0x35...d8de (Garv's Tab A9) ignored via Telegram; reminders stopped.
+2026-08-24 10:29:25 INFO    telegram | Telegram message 115 edited.
+2026-08-24 10:29:32 INFO    telegram | Telegram button pressed: monitor for license 4
+2026-08-24 10:29:32 INFO    monitor | Monitoring resumed for license 0x35...d8de (Garv's Tab A9) via Telegram; device still offline, sending alert.
+2026-08-24 10:29:33 INFO    telegram | Telegram message 115 edited.
+2026-08-24 10:29:34 INFO    telegram | Telegram notification sent (message_id=116).
+2026-08-24 10:30:01 INFO    monitor | Shutdown requested; exiting.
+2026-08-24 10:36:39 INFO    monitor | Credentials verified; monitoring started (state file: C:\Users\garvs\OneDrive\Documents\unetwork-monitor\state.json).
+2026-08-24 10:36:39 INFO    telegram | Telegram notifications enabled.
+2026-08-24 10:36:39 INFO    telegram | Telegram callback listener started.
+2026-08-24 10:36:40 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-24 10:36:40 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-24 10:36:40 INFO    monitor | Offline reminder sent for license 0x35...d8de (10 minute(s) offline).
+2026-08-24 10:36:42 INFO    telegram | Telegram notification sent (message_id=117).
+2026-08-24 10:37:12 INFO    monitor | Credentials verified; monitoring started (state file: C:\Users\garvs\OneDrive\Documents\unetwork-monitor\state.json).
+2026-08-24 10:37:12 INFO    telegram | Telegram notifications enabled.
+2026-08-24 10:37:12 INFO    telegram | Telegram callback listener started.
+2026-08-24 10:37:13 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-24 10:37:13 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-24 10:38:13 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-24 10:38:13 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-24 10:38:36 INFO    telegram | Telegram button pressed: ignore for license 9
+2026-08-24 10:38:36 WARNING monitor | Telegram action for unknown short id '9'; ignoring.
+2026-08-24 10:38:47 INFO    telegram | Telegram button pressed: ignore for license 9
+2026-08-24 10:38:47 WARNING monitor | Telegram action for unknown short id '9'; ignoring.
+2026-08-24 10:39:13 INFO    monitor | Ignored 1 license(s) without a bound device name.
+2026-08-24 10:39:13 INFO    monitor | Fetched 11 license(s); 10 online.
+2026-08-24 10:39:13 INFO    monitor | Offline reminder sent for license 0x35...d8de (15 minute(s) offline).
+2026-08-24 10:39:35 INFO    telegram | Telegram notification sent (message_id=118).
+2026-08-24 10:39:42 INFO    telegram | Telegram button pressed: ignore for license 4
+2026-08-24 10:39:42 INFO    monitor | License 0x35...d8de (Garv's Tab A9) ignored via Telegram; reminders stopped.
+2026-08-24 10:39:43 INFO    telegram | Telegram message 118 edited.
+2026-08-24 10:39:48 INFO    telegram | Telegram button pressed: monitor for license 4
+2026-08-24 10:39:48 INFO    monitor | Monitoring started for license 0x35...d8de (Garv's Tab A9) via Telegram; device still offline, sending alert.
+2026-08-24 10:39:50 INFO    telegram | Telegram message 118 edited.
+2026-08-24 10:40:01 INFO    telegram | Telegram button pressed: ignore for license 9
+2026-08-24 10:40:01 WARNING monitor | Telegram action for unknown short id '9'; ignoring.
+2026-08-24 10:40:08 INFO    monitor | Shutdown requested; exiting.
