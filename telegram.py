@@ -106,7 +106,7 @@ class TelegramNotifier:
         )
         return False
 
-    def start_callback_poller(self, handler):
+    def start_callback_poller(self, handler, command_handler=None):
         """Begin a daemon thread that dispatches inline-button presses to handler.
 
         handler(action, license_ref, message_id) must return a tuple
@@ -114,6 +114,8 @@ class TelegramNotifier:
         with toast_text before any followup job (message edits/sends) runs.
 
         followup_jobs is a list of callables to execute after the callback is acknowledged.
+
+        command_handler(text) optionally handles plain-text commands such as /licenses.
         """
         if self._callback_thread is not None:
             return
@@ -122,7 +124,8 @@ class TelegramNotifier:
             return
         self._stop_event.clear()
         self._callback_thread = threading.Thread(
-            target=self._poll_loop, args=(handler,), name="telegram-callbacks", daemon=True
+            target=self._poll_loop, args=(handler, command_handler),
+            name="telegram-callbacks", daemon=True
         )
         self._callback_thread.start()
         logger.info("Telegram callback listener started.")
@@ -130,7 +133,7 @@ class TelegramNotifier:
     def stop(self):
         self._stop_event.set()
 
-    def _poll_loop(self, handler):
+    def _poll_loop(self, handler, command_handler=None):
         url = f"{API_BASE}/bot{self._token}/getUpdates"
         params = {"timeout": 25, "offset": 0}
         while not self._stop_event.is_set():
@@ -155,11 +158,20 @@ class TelegramNotifier:
                 continue
             for update in updates:
                 params["offset"] = update["update_id"] + 1
+                incoming = update.get("message") or {}
+                incoming_text = (incoming.get("text") or "").strip()
+                if incoming_text.startswith("/licenses"):
+                    if command_handler:
+                        try:
+                            command_handler(incoming_text)
+                        except Exception:
+                            logger.exception("Command handler failed for /licenses")
+                    continue
                 query = update.get("callback_query")
                 if not query:
                     continue
                 action, _, license_ref = (query.get("data") or "").partition(":")
-                if action not in ("ignore", "monitor", "start") or not license_ref:
+                if action not in ("ignore", "monitor", "start", "toggle") or not license_ref:
                     logger.warning("Ignoring unsupported callback data: %r", query.get("data"))
                     self._answer_callback(query.get("id"))
                     continue

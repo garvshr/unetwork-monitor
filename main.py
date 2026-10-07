@@ -170,6 +170,36 @@ def start_keyboard(action_id):
     }
 
 
+def license_toggle_keyboard(action_id, enabled):
+    """Keyboard for license toggle in /licenses list."""
+    text = "🟢 Active" if enabled else "🔴 Inactive"
+    return {
+        "inline_keyboard": [
+            [{"text": text, "callback_data": f"toggle:{action_id}"}]
+        ]
+    }
+
+
+def build_licenses_list(holder):
+    """Build /licenses list text plus one toggle button per license row."""
+    licenses = holder.get("licenses", {})
+    if not licenses:
+        return "📋 Monitored Licenses\n\nNo licenses tracked yet.", None
+    lines = ["📋 Monitored Licenses", "", "Tap a license to turn monitoring on/off:"]
+    keyboard = []
+    for license_id in sorted(licenses):
+        info = licenses[license_id]
+        action_id = get_or_create_action_id(holder, license_id)
+        enabled = info.get("monitoring_enabled", True)
+        name = (info.get("device_name") or "?")[:24]
+        lines.append(f"{'🟢' if enabled else '🔴'} {short_id(license_id)} | {name}")
+        keyboard.append([{
+            "text": f"{short_id(license_id)} | {name} | {'Active' if enabled else 'Inactive'}",
+            "callback_data": f"toggle:{action_id}",
+        }])
+    return "\n".join(lines), {"inline_keyboard": keyboard}
+
+
 def snapshot_licenses(items):
     """Extract {license id: record}; licenses without a deviceName are ignored."""
     licenses = {}
@@ -188,6 +218,7 @@ def snapshot_licenses(items):
             "device_name": device_name,
             "status": "online" if item.get("isOnline") else "offline",
             "notification_state": "active",
+            "monitoring_enabled": True,
         }
     if skipped:
         logger.info("Ignored %d license(s) without a bound device name.", skipped)
@@ -303,8 +334,8 @@ def make_action_handler(holder, state_lock, notifier):
                 alert_state = "active"
 
             # Handle recovery - if device is online and alert was recovered, alert is closed
-            # But allow "monitor" action to resume monitoring
-            if entry.get("status") == "online" and alert_state == "recovered" and action not in ("monitor", "start"):
+            # But allow "monitor" action to resume monitoring and "toggle" (master switch)
+            if entry.get("status") == "online" and alert_state == "recovered" and action not in ("monitor", "start", "toggle"):
                 return f"Alert already closed: {device_name} is online.", []
 
             followup_jobs = []
@@ -398,11 +429,47 @@ def make_action_handler(holder, state_lock, notifier):
                         followup_jobs.append(edit_monitoring_started)
                     return "Monitoring started. Device is online.", followup_jobs
 
+            if action == "toggle":
+                enabled = entry.get("monitoring_enabled", True)
+                entry["monitoring_enabled"] = not enabled
+                save_state(holder)
+                logger.info(
+                    "License %s (%s) monitoring %s via /licenses.",
+                    short_id(license_id),
+                    device_name,
+                    "enabled" if not enabled else "disabled",
+                )
+                if message_id and notifier:
+                    def refresh_licenses_list():
+                        fresh_text, fresh_keyboard = build_licenses_list(holder)
+                        notifier.edit_message(fresh_text, message_id, buttons=fresh_keyboard)
+                    followup_jobs.append(refresh_licenses_list)
+                if enabled:
+                    return f"Monitoring disabled for {device_name}.", followup_jobs
+                return f"Monitoring enabled for {device_name}.", followup_jobs
+
             return "Unknown action.", []
 
             return "Unknown action.", []
 
     return handle_action
+
+
+def make_command_handler(holder, state_lock, notifier):
+    """Build the /licenses command handler (permanent per-license toggle)."""
+
+    def handle_command(text):
+        command = (text or "").strip().split()[0] if (text or "").strip() else ""
+        if command != "/licenses":
+            return
+        with state_lock:
+            list_text, keyboard = build_licenses_list(holder)
+            save_state(holder)
+        if notifier:
+            notifier.notify(list_text, buttons=keyboard)
+        logger.info("/licenses list sent (%d license(s)).", len(holder.get("licenses", {})))
+
+    return handle_command
 
 
 def run_loop(client, config, once=False, notifier=None):
@@ -412,7 +479,10 @@ def run_loop(client, config, once=False, notifier=None):
     holder = load_state()
 
     if notifier:
-        notifier.start_callback_poller(make_action_handler(holder, state_lock, notifier))
+        notifier.start_callback_poller(
+            make_action_handler(holder, state_lock, notifier),
+            make_command_handler(holder, state_lock, notifier),
+        )
 
     while True:
         started = time.monotonic()
@@ -440,6 +510,8 @@ def run_loop(client, config, once=False, notifier=None):
                         info["notification_state"] = "ignored"
                     if prev.get("telegram_message_id"):
                         info["telegram_message_id"] = prev["telegram_message_id"]
+                    if "monitoring_enabled" in prev:
+                        info["monitoring_enabled"] = prev["monitoring_enabled"]
                     if info["status"] != "offline":
                         continue
                     prev_since = prev.get("offline_since")
@@ -462,6 +534,14 @@ def run_loop(client, config, once=False, notifier=None):
                                 short_id(license_id),
                                 info["device_name"],
                                 alert_state,
+                            )
+                            continue
+                        # Skip notification if monitoring is disabled for this license
+                        if not info.get("monitoring_enabled", True):
+                            logger.info(
+                                "License %s (%s) went offline but monitoring is disabled; no notification.",
+                                short_id(license_id),
+                                info["device_name"],
                             )
                             continue
                         info["notification_state"] = "active"
@@ -492,7 +572,7 @@ def run_loop(client, config, once=False, notifier=None):
                         minutes = _minutes_between(_parse_ts(since_raw), now_dt)
                         license_short = short_id(license_id)
                         footer = f"License:\n{license_short}\n\nOffline duration:\n{minutes} minutes" if minutes is not None else f"License:\n{license_short}"
-                        if notifier:
+                        if notifier and info.get("monitoring_enabled", True):
                             outgoing.append({
                                 "kind": "send",
                                 "license_id": license_id,
@@ -500,12 +580,12 @@ def run_loop(client, config, once=False, notifier=None):
                                 "buttons": None,
                                 "track": False,
                             })
-                            if stale_message_id:
-                                outgoing.append({
-                                    "kind": "edit",
-                                    "message_id": stale_message_id,
-                                    "text": RECOVERY_CLOSED_TEXT.format(device_name=stale_device_name or info["device_name"], license_short=license_short),
-                                })
+                        if notifier and stale_message_id:
+                            outgoing.append({
+                                "kind": "edit",
+                                "message_id": stale_message_id,
+                                "text": RECOVERY_CLOSED_TEXT.format(device_name=stale_device_name or info["device_name"], license_short=license_short),
+                            })
                         info["notification_state"] = "recovered"
                         if minutes is not None:
                             logger.info(
@@ -515,8 +595,10 @@ def run_loop(client, config, once=False, notifier=None):
                             )
 
                 for license_id, info in current.items():
-                    if info["status"] != "offline" or info.get("notification_state") not in (
-                        "active",
+                    if (
+                        info["status"] != "offline"
+                        or info.get("notification_state") not in ("active",)
+                        or not info.get("monitoring_enabled", True)
                     ):
                         continue
                     offline_ts = _parse_ts(info.get("offline_since"))
