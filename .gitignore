@@ -6,6 +6,14 @@ venv/
 # Secrets and runtime state - never commit
 config.json
 state.json
+users.json
 *.tmp
 
 json.json
+
+# Runtime artefacts - never commit
+logs/
+.freebuff/
+
+test_routing
+test_monitor

@@ -320,6 +320,79 @@ The monitor cannot refresh its access token and requires manual attention.
 Please manually update/fix the refresh token and restart the monitor.
 ```
 
+## Sharing With Friends
+
+The monitor runs as a **single script with a single bot**. Only you (the admin)
+control it; friends get read access to their own device alerts through the same
+bot — no second instance, no extra bot token.
+
+### How a friend gets access
+
+1. Your friend sends `/start` to your bot.
+2. The bot replies in **their** chat with their Telegram ID and stores them as
+   *pending*.
+3. You approve them from your bot:
+
+   ```
+   /approve 123456789 Alice
+   ```
+
+4. They send `/addDevices` and get the full device list (same data as your
+   `/licenses`). Every row is a toggle — tapping it follows or unfollows that
+   license.
+5. From then on they receive 🔴 offline, ⚠️ reminder and 🟢 online messages
+   **only** for the licenses they picked, and only in their own chat.
+
+### Admin commands
+
+| Command | Description |
+|---------|-------------|
+| `/start` | Show the admin help text |
+| `/users` | List everyone (🟡 pending, 🟢 approved) with device counts |
+| `/approve <id> [name]` | Grant a friend access to `/addDevices` |
+| `/revoke <id>` | Remove a friend and drop their device selection |
+| `/licenses` | Toggle monitoring per license (global, unchanged) |
+
+### Friend commands
+
+| Command | Description |
+|---------|-------------|
+| `/start` | Show their Telegram ID / welcome message |
+| `/addDevices [page]` | Follow or unfollow devices (paginated) |
+
+### What stays yours
+
+- You keep **every** notification for **every** device, exactly as before.
+- `/licenses` remains a global kill switch: if monitoring is off for a license,
+  nobody — including friends — is notified about it.
+- A friend pressing **Ignore** mutes only *their* copy of that alert; your
+  reminders keep firing.
+- Commands and buttons are checked against the sender's Telegram ID, so a
+  stranger who finds your bot cannot change any state.
+
+### Where it is stored
+
+Approved users live in `users.json` (gitignored, alongside `config.json` and
+`state.json`):
+
+```json
+{
+  "users": {
+    "123456789": {
+      "user_id": "123456789",
+      "chat_id": "123456789",
+      "label": "Alice",
+      "approved": true,
+      "subscriptions": ["0x35e...d8de"]
+    }
+  }
+}
+```
+
+Override the location with `UNETWORK_USERS_FILE`. Each friend's per-alert state
+(ignored/recovered and the message id of their copy) lives inside the license
+entry in `state.json` under `"users"`.
+
 ## State Management
 
 The monitor maintains state in `state.json`:
@@ -387,6 +460,7 @@ unetwork-monitor/
 ├── config.json          # Configuration (create from example)
 ├── config.example.json  # Example configuration
 ├── state.json           # Persistent state (auto-generated)
+├── users.json           # Approved friends + their device picks (auto-generated)
 ├── requirements.txt     # Python dependencies
 ├── logs/
 │   └── unetwork-monitor.log  # Rotating log files
@@ -395,7 +469,7 @@ unetwork-monitor/
 
 ## Security Notes
 
-- Never commit `config.json` or `state.json` to version control
+- Never commit `config.json`, `state.json` or `users.json` to version control
 - Use environment variables for sensitive values in production
 - The `.gitignore` excludes sensitive files by default
 - Bot token and chat ID are not logged

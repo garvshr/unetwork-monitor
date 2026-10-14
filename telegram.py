@@ -46,17 +46,21 @@ class TelegramNotifier:
     def active(self):
         return self._enabled and bool(self._token) and bool(self._chat_id)
 
-    def notify(self, text, buttons=None):
-        """Send text; returns the Telegram message_id on success, else None."""
+    def notify(self, text, buttons=None, chat_id=None):
+        """Send text; returns the Telegram message_id on success, else None.
+
+        chat_id defaults to the configured admin chat, so existing callers keep
+        their exact behaviour; passing a chat_id delivers to that chat only.
+        """
         if not self.active:
             if self._enabled:
                 logger.warning("Skipping Telegram notification: token/chat id missing.")
             return None
-        return self._send(text, buttons)
+        return self._send(text, buttons, chat_id=chat_id)
 
-    def _send(self, text, buttons=None):
+    def _send(self, text, buttons=None, chat_id=None):
         url = f"{API_BASE}/bot{self._token}/sendMessage"
-        payload = {"chat_id": self._chat_id, "text": text}
+        payload = {"chat_id": chat_id or self._chat_id, "text": text}
         if buttons:
             payload["reply_markup"] = buttons
         try:
@@ -79,10 +83,10 @@ class TelegramNotifier:
         logger.info("Telegram notification sent (message_id=%s).", message_id)
         return message_id
 
-    def edit_message(self, text, message_id, buttons=None):
+    def edit_message(self, text, message_id, buttons=None, chat_id=None):
         """Edit an existing message; omitting buttons removes the keyboard."""
         payload = {
-            "chat_id": self._chat_id,
+            "chat_id": chat_id or self._chat_id,
             "message_id": message_id,
             "text": text,
         }
@@ -107,15 +111,16 @@ class TelegramNotifier:
         return False
 
     def start_callback_poller(self, handler, command_handler=None):
-        """Begin a daemon thread that dispatches inline-button presses to handler.
+        """Begin a daemon thread that dispatches updates to the given handlers.
 
-        handler(action, license_ref, message_id) must return a tuple
-        (toast_text, followup_jobs) or None. The callback query is answered
-        with toast_text before any followup job (message edits/sends) runs.
+        handler(action, license_ref, message_id, sender) must return a tuple
+        (toast_text, followup_jobs) or None, where sender is
+        {"from_id": ..., "chat_id": ...}. The callback query is answered with
+        toast_text before any followup job (message edits/sends) runs.
 
         followup_jobs is a list of callables to execute after the callback is acknowledged.
 
-        command_handler(text) optionally handles plain-text commands such as /licenses.
+        command_handler(text, sender) optionally handles plain-text commands.
         """
         if self._callback_thread is not None:
             return
@@ -160,27 +165,35 @@ class TelegramNotifier:
                 params["offset"] = update["update_id"] + 1
                 incoming = update.get("message") or {}
                 incoming_text = (incoming.get("text") or "").strip()
-                if incoming_text.startswith("/licenses"):
-                    if command_handler:
-                        try:
-                            command_handler(incoming_text)
-                        except Exception:
-                            logger.exception("Command handler failed for /licenses")
+                if incoming_text and command_handler:
+                    try:
+                        command_handler(incoming_text, _sender_from_message(incoming))
+                    except Exception:
+                        logger.exception(
+                            "Command handler failed for %r", incoming_text[:48]
+                        )
                     continue
                 query = update.get("callback_query")
                 if not query:
                     continue
                 action, _, license_ref = (query.get("data") or "").partition(":")
-                if action not in ("ignore", "monitor", "start", "toggle") or not license_ref:
+                if (
+                    action not in ("ignore", "monitor", "start", "toggle", "sub", "page")
+                    or not license_ref
+                ):
                     logger.warning("Ignoring unsupported callback data: %r", query.get("data"))
                     self._answer_callback(query.get("id"))
                     continue
                 message_id = (query.get("message") or {}).get("message_id")
+                sender = _sender_from_callback(query)
                 logger.info(
-                    "Telegram button pressed: %s for license %s", action, short_tag(license_ref)
+                    "Telegram button pressed: %s for %s (chat %s)",
+                    action,
+                    short_tag(license_ref),
+                    sender["chat_id"] or "?",
                 )
                 try:
-                    result = handler(action, license_ref, message_id)
+                    result = handler(action, license_ref, message_id, sender)
                 except Exception:
                     logger.exception("Callback handler failed for %r", query.get("data"))
                     self._answer_callback(
@@ -225,6 +238,26 @@ class TelegramNotifier:
                 )
         except requests.RequestException as exc:
             logger.debug("answerCallbackQuery failed: %s", exc)
+
+
+def _sender_from_message(message):
+    """{from_id, chat_id} for an incoming message update."""
+    chat = message.get("chat") or {}
+    origin = message.get("from") or {}
+    return {
+        "from_id": str(origin.get("id") or ""),
+        "chat_id": str(chat.get("id") or ""),
+    }
+
+
+def _sender_from_callback(query):
+    """{from_id, chat_id} for an inline-button press."""
+    origin = query.get("from") or {}
+    chat = (query.get("message") or {}).get("chat") or {}
+    return {
+        "from_id": str(origin.get("id") or ""),
+        "chat_id": str(chat.get("id") or ""),
+    }
 
 
 def short_tag(license_id):
