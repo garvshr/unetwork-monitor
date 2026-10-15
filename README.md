@@ -2,6 +2,9 @@
 
 A Python service that monitors Unetwork device online/offline status and sends Telegram notifications.
 
+# SUPPORT 
+- 0x8ebD9c7eD42645Bc60a1349a1E56b8f58FD36ffc (USDT-BSC)
+
 ## Features
 
 - Polls Unetwork API every 60 seconds for device license status
